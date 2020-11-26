@@ -37,6 +37,7 @@ postgresql_authentication:
   - {type: host, database: replication, user: all, address: '::1/128', auth_method: md5}
 ```
 Set postgresql databases and users to create if not set create_users: no and create_databases: no
+
 Example of creating databases and users:  
 ```Yaml
 postgresql_databases_users:
