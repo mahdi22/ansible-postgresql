@@ -21,7 +21,7 @@ galaxy_info:
       - focal
       - bionic
       - xenial
-  - name: opensuse
+  - name: OpenSUSE
     versions:
       - 12
       - 15

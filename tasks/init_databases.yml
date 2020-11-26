@@ -25,7 +25,7 @@
   when:
     - create_databases
     - postgresql_authentication | length > 0
-    - db_item.database != ''
+    - db_item.database | length > 0
 
 - name: create postgresql users
   postgresql_user:
@@ -46,7 +46,7 @@
   when:
     - create_users
     - postgresql_authentication | length > 0
-    - u_item.user != ''
+    - u_item.user | length > 0
 
 - name: set databases users privileges
   postgresql_user:
@@ -68,6 +68,6 @@
     - create_users
     - create_databases
     - postgresql_authentication | length > 0
-    - priv_item.user != ''
-    - priv_item.database != ''
-    - priv_item.priv != ''
+    - priv_item.user | length > 0
+    - priv_item.database | length > 0
+    - priv_item.priv | length > 0

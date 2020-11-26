@@ -36,13 +36,13 @@ postgresql_authentication:
   - {type: host, database: replication, user: all, address: '127.0.0.1/32', auth_method: md5}
   - {type: host, database: replication, user: all, address: '::1/128', auth_method: md5}
 ```
-Set postgresql databases and users to create if not set create_users: no and create_databases: no  
+Set postgresql databases and users to create if not set create_users: no and create_databases: no
+Example of creating databases and users:  
 ```Yaml
 postgresql_databases_users:
   - {database: database1, user: user1, userpassword: user1password, priv: ALL}
-  - {database: database1, user: user2, userpassword: user2password, priv: ALL}
-  - {database: database2, user: user3, userpassword: user3password, priv: ALL}
-  - {database: database3, user: user3, userpassword: user3password, priv: ALL}
+  - {database: database1, user:'', userpassword: '', priv: ''}
+  - {database: '', user: user3, userpassword: user3password, priv: ''}
 ```
 - To create only database without user set database: name, user:''
 - To create only user set database: '', user: name, userpassword: password
@@ -78,12 +78,12 @@ environment: "{{ proxy_env }}"
 
 This role is tested on these Linux distributions:
 
-- RHEL/CentOS 8   postgresql version supported 9.5, 9.4, 10, 11, 12, 13
-- RHEL/CentOS 7   postgresql version supported 9.5, 9.4, 10, 11, 12, 13
-- Debian 10       postgresql version supported 9.5, 9.4, 10, 11, 12, 13
-- Debian 9        postgresql version supported 9.5, 9.4, 10, 11, 12, 13
-- Ubuntu 20.04    postgresql version supported 9.5, 9.4, 10, 11, 12, 13
-- Ubuntu 18.04    postgresql version supported 9.5, 9.4, 10, 11, 12, 13
-- Ubuntu 16.04    postgresql version supported 9.5, 9.4, 10, 11, 12, 13
-- Suse SLES 12    postgresql version supported 9.5, 9.4, 10, 11, 12
-- Suse SLES 15    postgresql version supported 11, 12, 13
+- RHEL/CentOS 8   postgresql version  (9.5, 9.4, 10, 11, 12, 13)
+- RHEL/CentOS 7   postgresql version  (9.5, 9.4, 10, 11, 12, 13)
+- Debian 10       postgresql version  (9.5, 9.4, 10, 11, 12, 13)
+- Debian 9        postgresql version  (9.5, 9.4, 10, 11, 12, 13)
+- Ubuntu 20.04    postgresql version  (9.5, 9.4, 10, 11, 12, 13)
+- Ubuntu 18.04    postgresql version  (9.5, 9.4, 10, 11, 12, 13)
+- Ubuntu 16.04    postgresql version  (9.5, 9.4, 10, 11, 12, 13)
+- Suse SLES 12    postgresql version  (9.5, 9.4, 10, 11, 12)
+- Suse SLES 15    postgresql version  (11, 12, 13)
