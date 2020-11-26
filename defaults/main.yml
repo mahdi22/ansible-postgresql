@@ -1,0 +1,10 @@
+---
+# defaults file for postgresql
+postgresql_version: "9.6"
+disable_socket_connecxion: yes
+create_users: true
+create_databases: true
+pgsql_supported_version: ['9.5', '9.6', '10', '11', '12', '13']
+configure_firewalld_for_redhat: true
+check_selinux: true
+listen_addresses_host_ip: true

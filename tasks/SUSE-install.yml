@@ -1,0 +1,40 @@
+---
+# tasks file for postgresql
+
+## Check if postgresql database is initialized
+- name: Check if Postgresql {{ postgresql_version }} is already initialized
+  stat:
+    path: "{{ postgresql_data_dir }}/PG_VERSION"
+  register: pgdata_version
+
+- name: Install Postgresql {{ postgresql_version }} repository for {{ ansible_distribution_file_variety }} {{ ansible_distribution }} {{ ansible_distribution_major_version }}
+  template:
+    src: pgdg-suse-sles.repo.j2
+    dest: /etc/zypp/repos.d/pgdg-suse-sles.repo
+    owner: root
+    mode: 0644
+  when: ansible_distribution_major_version == "12" and postgresql_version in ('9.5', '9.6', '10','11', '12')
+
+- name: Install Postgresql {{ postgresql_version }} repository for {{ ansible_distribution_file_variety }} {{ ansible_distribution }} {{ ansible_distribution_major_version }}
+  template:
+    src: pgdg-suse-sles.repo.j2
+    dest: /etc/zypp/repos.d/pgdg-suse-sles.repo
+    owner: root
+    mode: 0644
+  when: ansible_distribution_major_version == "15" and postgresql_version in ('11', '12', '13')
+
+- name: install Postgresql {{ postgresql_version }} packages
+  zypper:
+    name: "{{ postgresql_packages }}"
+    state: present
+  environment: "{{ proxy_env }}"
+
+- name: set fact posgresql bin setup file
+  set_fact:
+    postgresql_bin_setup: "/usr/pgsql-{{ postgresql_version }}/bin/postgresql{{ postgresql_version | replace('.','') }}-setup"
+  when: postgresql_version in ('9.4','9.5','9.6' )
+
+- name: Initialize the Postgresql {{ postgresql_version }} database
+  command: "{{ postgresql_bin_setup }} initdb"
+  when: not pgdata_version.stat.exists
+  notify: restart postgresql service

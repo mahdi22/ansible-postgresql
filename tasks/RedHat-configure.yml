@@ -1,0 +1,110 @@
+---
+# tasks file for postgresql
+
+- name: Ensure that the firewalld is activated and started
+  systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+  when: configure_firewalld_for_redhat
+
+- name: set fact get postgresql tcp port
+  set_fact:
+    postgresql_port: "{{ config_item.value }}"
+  with_items: "{{ postgresql_config }}"
+  loop_control:
+    loop_var: config_item
+  when: configure_firewalld_for_redhat and config_item.option == "port"
+
+- name: allow postgresql port on firewall
+  firewalld:
+    port: "{{ postgresql_port }}/tcp"
+    permanent: yes
+    state: enabled
+  notify: restart firewalld
+  when: postgresql_port is defined
+
+- name: set fact get log directory
+  set_fact:
+    postgresql_log_dir: "{{ config_item.value }}"
+  with_items: "{{ postgresql_config }}"
+  loop_control:
+    loop_var: config_item
+  when: config_item.option == "log_directory"
+
+- name: create log directory
+  file:
+    path: "{{ postgresql_log_dir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: 0744
+  notify: restart postgresql service
+
+- name: get selinux status
+  shell: "grep -wv SELINUX= /etc/selinux/config | grep -w SELINUX"
+  register: selinux_status
+  changed_when: false
+  when: check_selinux
+
+- name: set selinux status value
+  set_fact:
+    selinux_status_value: "{{ selinux_status.stdout | regex_replace('SELINUX=', '') }}"
+  when: check_selinux and selinux_status.stdout != ''
+
+- name: Configure selinux policy
+  block:
+  - name: Selinux allow postgresql ti listne on tcp port {{ postgresql_port }}
+    seport:
+      ports: "{{ postgresql_port }}"
+      proto: tcp
+      setype: postgresql_port_t
+      state: present
+    when: postgresql_port is defined and postgresql_port not in ('5432', '9898')
+
+  - name: Selinux allow postgresql to modify files on {{ postgresql_log_dir }}
+    sefcontext:
+      target: "{{ postgresql_log_dir | regex_replace('\\/$', '') }}(/.*)?"
+      setype: postgresql_log_t
+    notify: Apply new SELinux file context
+  when: selinux_status_value in ('enforcing', 'permissive')
+
+- name: Configure general settings option
+  lineinfile:
+    dest: "{{ postgresql_data_dir }}postgresql.conf"
+    regexp: "^#?{{ item.option }}.+$"
+    line: "{{ item.option }} = '{{ item.value }}'"
+    state: present
+    mode: 0600
+  with_items: "{{ postgresql_config }}"
+  notify: restart postgresql service
+
+- name: set postgresql listen addresses
+  block:
+  - name: get postgresql listen addresses
+    set_fact:
+      pgdg_ip_addresses: "{{ ansible_default_ipv4.address }}, localhost"
+
+  - name: configure postgresql listen addresses
+    lineinfile:
+      dest: "{{ postgresql_data_dir }}postgresql.conf"
+      regexp: "^#?listen_addresses.+$"
+      line: "listen_addresses = '{{ pgdg_ip_addresses }}'"
+      state: present
+      mode: 0600
+    notify: restart postgresql service
+  when: listen_addresses_host_ip
+
+- name: PostgreSQL Client Authentication Configuration File
+  template:
+    src: "pg_hba.conf.j2"
+    dest: "{{ postgresql_data_dir }}pg_hba.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_user }}"
+    mode: 0600
+  notify:
+    - Apply new SELinux file context
+    - restart postgresql service
+  when: postgresql_authentication | length > 0
+
+- meta: flush_handlers

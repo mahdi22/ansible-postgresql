@@ -1,0 +1,62 @@
+---
+# tasks file for postgresql
+
+## Check if postgresql database is initialized
+- name: Check if Postgresql {{ postgresql_version }} is already initialized
+  stat:
+    path: "{{ postgresql_data_dir }}/PG_VERSION"
+  register: pgdata_version
+
+- name: Install Postgresql {{ postgresql_version }} repository
+  template:
+    src: pgdg-redhat.repo.j2
+    dest: /etc/yum.repos.d/pgdg-redhat.repo
+
+- name: install ansible prerequisites
+  package:
+    name: "python{{ ansible_python_version is version('3.0.0', '<') | ternary('2', '3') }}-psycopg2"
+    state: present
+    disablerepo: "*"
+    enablerepo: "pgdg{{ postgresql_version | replace('.','') }}"
+  environment: "{{ proxy_env }}"
+  
+- name: install selinux tools
+  package:
+    name: "policycoreutils-python"
+    state: present
+  environment: "{{ proxy_env }}"
+  when: ansible_distribution_file_variety == "RedHat" and ansible_distribution_major_version == "7"
+
+- name: install selinux tools
+  package:
+    name: "policycoreutils-python-utils"
+    state: present
+  environment: "{{ proxy_env }}"
+  when: ansible_distribution_file_variety == "RedHat" and ansible_distribution_major_version == "8"
+
+- name: disable dnf postgresql default module
+  command: dnf module -y disable postgresql
+  when: ansible_distribution_file_variety == "RedHat" and ansible_distribution_major_version == "8"
+
+- name: ensure RPM-GPG-KEY-PGDG file exist
+  get_url:
+    url: "https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG"
+    dest: "/etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG"
+    validate_certs: no
+  environment: "{{ proxy_env }}"
+
+- name: Install Postgresql {{ postgresql_version }} packages
+  package:
+    name: "{{ postgresql_packages }}"
+    state: present
+  environment: "{{ proxy_env }}"
+
+- name: set fact posgresql bin setup file
+  set_fact:
+    postgresql_bin_setup: "/usr/pgsql-{{ postgresql_version }}/bin/postgresql{{ postgresql_version | replace('.','') }}-setup"
+  when: postgresql_version in ('9.5','9.6' )
+
+- name: Initialize the Postgresql {{ postgresql_version }} database
+  command: "{{ postgresql_bin_setup }} initdb"
+  when: not pgdata_version.stat.exists
+  notify: restart postgresql service

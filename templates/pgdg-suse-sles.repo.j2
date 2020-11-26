@@ -1,0 +1,13 @@
+#######################################################
+#               PGDG SUSE SLES repositories           #
+#######################################################
+
+[pgdg-{{ postgresql_version }}]
+name=PostgreSQL {{ postgresql_version }} SLES $releasever - $basearch
+enabled=1
+autorefresh=0
+baseurl=https://download.postgresql.org/pub/repos/zypp/{{ postgresql_version }}/suse/sles-$releasever-$basearch
+type=rpm-md
+gpgcheck=1
+gpgkey=https://download.postgresql.org/pub/repos/zypp/{{ postgresql_version }}/suse/sles-$releasever-$basearch/repodata/repomd.xml
+keeppackages=0

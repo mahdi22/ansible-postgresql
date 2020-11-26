@@ -1,0 +1,66 @@
+---
+# tasks file for postgresql
+
+- name: set fact get postgresql tcp port
+  set_fact:
+    postgresql_port: "{{ config_item.value }}"
+  with_items: "{{ postgresql_config }}"
+  loop_control:
+    loop_var: config_item
+  when: config_item.option == "port"
+
+- name: set fact get log directory
+  set_fact:
+    postgresql_log_dir: "{{ config_item.value }}"
+  with_items: "{{ postgresql_config }}"
+  loop_control:
+    loop_var: config_item
+  when: config_item.option == "log_directory"
+
+- name: create log directory
+  file:
+    path: "{{ postgresql_log_dir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: 0744
+  notify: restart postgresql service
+
+- name: Configure general settings option
+  lineinfile:
+    dest: "{{ postgresql_config_dir }}postgresql.conf"
+    regexp: "^#?{{ item.option }}.+$"
+    line: "{{ item.option }} = '{{ item.value }}'"
+    state: present
+    mode: 0600
+  with_items: "{{ postgresql_config }}"
+  notify: restart postgresql service
+
+- name: set postgresql listen addresses
+  block:
+  - name: get postgresql listen addresses
+    set_fact:
+      pgdg_ip_addresses: "{{ ansible_default_ipv4.address }}, localhost"
+
+  - name: configure postgresql listen addresses
+    lineinfile:
+      dest: "{{ postgresql_config_dir }}postgresql.conf"
+      regexp: "^#?listen_addresses.+$"
+      line: "listen_addresses = '{{ pgdg_ip_addresses }}'"
+      state: present
+      mode: 0600
+    notify: restart postgresql service
+  when: listen_addresses_host_ip
+
+- name: PostgreSQL Client Authentication Configuration File
+  template:
+    src: "pg_hba.conf.j2"
+    dest: "{{ postgresql_config_dir }}pg_hba.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_user }}"
+    mode: 0600
+  notify:
+    - restart postgresql service
+  when: postgresql_authentication | length > 0
+
+- meta: flush_handlers

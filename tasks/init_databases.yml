@@ -1,0 +1,73 @@
+---
+# tasks file for postgresql
+- name: get locale system langage
+  command: "localectl status"
+  register: locale
+  when:
+    - postgresql_authentication | length > 0
+
+- name: create postgresql databases
+  postgresql_db:
+    name: "{{ db_item.database }}"
+    lc_collate: "{{ locale.stdout_lines[0].split(\"=\")[1] }}"
+    lc_ctype: "{{ locale.stdout_lines[0].split(\"=\")[1] }}"
+    login_host: "{{ postgresql_host }}"
+    login_password: ""
+    login_user: "{{ postgresql_user }}"
+    login_unix_socket: "{{ postgresql_unix_socket_dir }}"
+    state: present
+  with_items: "{{ postgresql_databases_users }}"
+  loop_control:
+    loop_var: db_item
+  become: true
+  become_method: su
+  become_user: "{{ postgresql_user }}"
+  when:
+    - create_databases
+    - postgresql_authentication | length > 0
+    - db_item.database != ''
+
+- name: create postgresql users
+  postgresql_user:
+    name: "{{ u_item.user }}"
+    password: "{{ u_item.userpassword }}"
+    encrypted: true
+    login_host: "{{ postgresql_host }}"
+    login_password: ""
+    login_user: "{{ postgresql_user }}"
+    login_unix_socket: "{{ postgresql_unix_socket_dir }}"
+    state: present
+  with_items: "{{ postgresql_databases_users }}"
+  loop_control:
+    loop_var: u_item
+  become: true
+  become_method: su
+  become_user: "{{ postgresql_user }}"
+  when:
+    - create_users
+    - postgresql_authentication | length > 0
+    - u_item.user != ''
+
+- name: set databases users privileges
+  postgresql_user:
+    name: "{{ priv_item.user }}"
+    db: "{{ priv_item.database }}"
+    priv: "{{ priv_item.priv }}"
+    login_host: "{{ postgresql_host }}"
+    login_password: ""
+    login_user: "{{ postgresql_user }}"
+    login_unix_socket: "{{ postgresql_unix_socket_dir }}"
+    state: present
+  with_items: "{{ postgresql_databases_users }}"
+  loop_control:
+    loop_var: priv_item
+  become: true
+  become_method: su
+  become_user: "{{ postgresql_user }}"
+  when:
+    - create_users
+    - create_databases
+    - postgresql_authentication | length > 0
+    - priv_item.user != ''
+    - priv_item.database != ''
+    - priv_item.priv != ''

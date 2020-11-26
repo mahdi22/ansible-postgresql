@@ -1,0 +1,43 @@
+---
+# tasks file for postgresql
+- name: add debian postgresql repository
+  template:
+    src: "deb_repo.list.j2"
+    dest: "/etc/apt/sources.list.d/pgdg.list"
+  notify: Apt Update
+
+- name: add posgresql repository key
+  apt_key:
+    url: "{{ key_url }}"
+    state: present
+  notify: Apt Update
+  environment: "{{ proxy_env }}"
+
+- meta: flush_handlers
+
+- name: set postgresql prerequisites
+  set_fact:
+    postgresql_packages_prereq: "python-psycopg2"
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
+
+- name: install ansible prerequisites
+  apt:
+    name: "{{ postgresql_packages_prereq }}"
+    state: present
+  environment: "{{ proxy_env }}"
+
+- name: install postgresql packages
+  apt:
+    name: "{{ postgresql_packages }}"
+    state: present
+  environment: "{{ proxy_env }}"
+
+- name: Check if Postgresql {{ postgresql_version }} is already initialized
+  stat:
+    path: "{{ postgresql_data_dir }}/PG_VERSION"
+  register: pgdata_version
+
+- name: Initialize the Postgresql {{ postgresql_version }} database
+  command: "{{ postgresql_bin_setup }}"
+  when: not pgdata_version.stat.exists
+  notify: restart postgresql service

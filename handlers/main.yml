@@ -1,0 +1,23 @@
+---
+# handlers file for postgresql
+- name: restart postgresql service
+  systemd:
+    name: "{{ postgresql_daemon }}"
+    state: restarted
+    enabled: yes
+
+- name: restart firewalld
+  systemd:
+    name: firewalld
+    state: restarted
+    enabled: yes
+
+- name: Apply new SELinux file context
+  command: "{{ item }}"
+  with_items:
+    - "restorecon -R -v {{ postgresql_log_dir }}"
+    - "restorecon -R -v {{ postgresql_data_dir }}"
+
+- name: Apt Update
+  apt: update_cache=yes force_apt_get=yes
+  environment: "{{ proxy_env }}"

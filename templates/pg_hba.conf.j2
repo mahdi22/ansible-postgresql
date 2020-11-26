@@ -1,0 +1,5 @@
+# PostgreSQL Client Authentication Configuration File
+# ===================================================
+{% for pg_auth in postgresql_authentication %}
+{{ pg_auth.type }} {{ pg_auth.database }} {{ pg_auth.user }} {{ pg_auth.address|default('') }} {{ pg_auth.auth_method }} {{ pg_auth.auth_options|default("") }}
+{% endfor %}

@@ -1,0 +1,41 @@
+galaxy_info:
+  author: Mahdi Bourbita
+  role_name: postgresql
+  description: Install and configure Postgresql server on Rhel/CentOS, Debian, Ubuntu and SUSE SLES ditributions
+
+  license: license (BSD)
+
+  min_ansible_version: 2.7
+
+  platforms:
+  - name: EL
+    versions:
+      - 7
+      - 8
+  - name: Debian
+    versions:
+      - buster
+      - stretch
+  - name: Ubuntu
+    versions:
+      - focal
+      - bionic
+      - xenial
+  - name: opensuse
+    versions:
+      - 12
+      - 15
+
+  galaxy_tags:
+    - devops
+    - database
+    - data
+    - postgresql
+    - ansible
+    - centos
+    - debian
+    - ubuntu
+    - redhat
+    - puppet
+    - system
+dependencies: []

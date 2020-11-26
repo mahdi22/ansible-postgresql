@@ -1,0 +1,10 @@
+---
+# vars file for postgresql
+postgresql_packages:
+  - "postgresql{{ postgresql_version | replace('.','') }}-server"
+  - "python{{ ansible_python_version is version('3.0.0', '<') | ternary('2', '3') }}-psycopg2"
+postgresql_daemon: postgresql-{{ postgresql_version }}.service
+postgresql_unix_socket_dir: "/var/run/postgresql/"
+postgresql_bin_setup: "/usr/pgsql-{{ postgresql_version }}/bin/postgresql-{{ postgresql_version | replace('.','') }}-setup"
+postgresql_data_dir: "/var/lib/pgsql/{{ postgresql_version }}/data/"
+postgresql_user: "postgres"
