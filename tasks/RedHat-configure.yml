@@ -42,7 +42,7 @@
   notify: restart postgresql service
 
 - name: get selinux status
-  shell: "grep -wv SELINUX= /etc/selinux/config | grep -w SELINUX"
+  shell: "set -o pipefail && grep -wv SELINUX= /etc/selinux/config | grep -w SELINUX"
   register: selinux_status
   changed_when: false
   when: check_selinux

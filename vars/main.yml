@@ -27,5 +27,5 @@ postgresql_authentication:
 
 postgresql_databases_users:
   - {database: database1, user: user1, userpassword: user1password, priv: ALL}
-  - {database: database1, user:'', userpassword: '', priv: ''}
+  - {database: database1, user: '', userpassword: '', priv: ''}
   - {database: '', user: user3, userpassword: user3password, priv: ''}
