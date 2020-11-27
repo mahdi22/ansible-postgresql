@@ -50,7 +50,7 @@
 - name: set selinux status value
   set_fact:
     selinux_status_value: "{{ selinux_status.stdout | regex_replace('SELINUX=', '') }}"
-  when: check_selinux and selinux_status.stdout != ''
+  when: check_selinux and selinux_status.stdout | length > 0
 
 - name: Configure selinux policy
   block:
