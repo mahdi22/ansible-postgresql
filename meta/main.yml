@@ -21,9 +21,10 @@ galaxy_info:
       - focal
       - bionic
       - xenial
-  - name: OpenSUSE
+  - name: SLES
     versions:
-      - 12
+      - 12SP4
+      - 12SP5
       - 15
 
   galaxy_tags:
