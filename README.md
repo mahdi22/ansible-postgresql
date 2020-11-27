@@ -36,14 +36,14 @@ postgresql_authentication:
   - {type: host, database: replication, user: all, address: '127.0.0.1/32', auth_method: md5}
   - {type: host, database: replication, user: all, address: '::1/128', auth_method: md5}
 ```
-Set postgresql databases and users to create if not set create_users: no and create_databases: no
+Set postgresql databases and users to create if not set create_users: no and create_databases: no in default/main.yml
 
-Example of creating databases and users:  
+Example of creating multiple databases and users:  
 ```Yaml
 postgresql_databases_users:
-  - {database: database1, user: user1, userpassword: user1password, priv: ALL}
-  - {database: database1, user:'', userpassword: '', priv: ''}
-  - {database: '', user: user3, userpassword: user3password, priv: ''}
+  - {database: test, user: user1, userpassword: user1pass, priv: ALL}  #add database 'user' and user 'user1' with password 'user1pass' with Privileges 'ALL'
+  - {database: test1, user:'', userpassword: '', priv: ''}                  #add only database 'test1'
+  - {database: '', user: user2, userpassword: user2pass, priv: ''}          #add only user 'user2' with password 'user2pass'
 ```
 - To create only database without user set database: name, user:''
 - To create only user set database: '', user: name, userpassword: password
