@@ -23,8 +23,7 @@ galaxy_info:
       - xenial
   - name: SLES
     versions:
-      - 12SP4
-      - 12SP5
+      - 12
       - 15
 
   galaxy_tags:
