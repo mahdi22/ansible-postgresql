@@ -12,6 +12,21 @@
     src: pgdg-redhat.repo.j2
     dest: /etc/yum.repos.d/pgdg-redhat.repo
 
+- name: get pgdg RMP GPG KEY
+  rpm_key:
+    state: present
+    key: https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+  environment: "{{ proxy_env }}"
+  when:
+    - use_proxy is defined
+    - use_proxy
+
+- name: get pgdg RMP GPG KEY
+  rpm_key:
+    state: present
+    key: https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG
+  when: (use_proxy is not defined) or (not use_proxy)
+
 - name: install ansible prerequisites
   package:
     name: "python{{ ansible_python_version is version('3.0.0', '<') | ternary('2', '3') }}-psycopg2"
@@ -19,20 +34,57 @@
     disablerepo: "*"
     enablerepo: "pgdg{{ postgresql_version | replace('.','') }}"
   environment: "{{ proxy_env }}"
+  when:
+    - use_proxy is defined
+    - use_proxy
+
+- name: install ansible prerequisites
+  package:
+    name: "python{{ ansible_python_version is version('3.0.0', '<') | ternary('2', '3') }}-psycopg2"
+    state: present
+    disablerepo: "*"
+    enablerepo: "pgdg{{ postgresql_version | replace('.','') }}"
+  when: (use_proxy is not defined) or (not use_proxy)
   
 - name: install selinux tools
   package:
     name: "policycoreutils-python"
     state: present
   environment: "{{ proxy_env }}"
-  when: ansible_distribution_file_variety == "RedHat" and ansible_distribution_major_version == "7"
+  when:
+    - ansible_distribution_file_variety == "RedHat"
+    - ansible_distribution_major_version == "7"
+    - use_proxy is defined
+    - use_proxy
+
+- name: install selinux tools
+  package:
+    name: "policycoreutils-python"
+    state: present
+  when:
+    - ansible_distribution_file_variety == "RedHat"
+    - ansible_distribution_major_version == "7"
+    - (use_proxy is not defined) or (not use_proxy)
 
 - name: install selinux tools
   package:
     name: "policycoreutils-python-utils"
     state: present
   environment: "{{ proxy_env }}"
-  when: ansible_distribution_file_variety == "RedHat" and ansible_distribution_major_version == "8"
+  when:
+    - ansible_distribution_file_variety == "RedHat"
+    - ansible_distribution_major_version == "8"
+    - use_proxy is defined
+    - use_proxy
+
+- name: install selinux tools
+  package:
+    name: "policycoreutils-python-utils"
+    state: present
+  when:
+    - ansible_distribution_file_variety == "RedHat"
+    - ansible_distribution_major_version == "8"
+    - (use_proxy is not defined) or (not use_proxy)
 
 - name: disable dnf postgresql default module
   command: dnf module -y disable postgresql
@@ -44,12 +96,31 @@
     dest: "/etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG"
     validate_certs: no
   environment: "{{ proxy_env }}"
+  when:
+    - use_proxy is defined
+    - use_proxy
+
+- name: ensure RPM-GPG-KEY-PGDG file exist
+  get_url:
+    url: "https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG"
+    dest: "/etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG"
+    validate_certs: no
+  when: (use_proxy is not defined) or (not use_proxy)
 
 - name: Install Postgresql {{ postgresql_version }} packages
   package:
     name: "{{ postgresql_packages }}"
     state: present
   environment: "{{ proxy_env }}"
+  when:
+    - use_proxy is defined
+    - use_proxy
+
+- name: Install Postgresql {{ postgresql_version }} packages
+  package:
+    name: "{{ postgresql_packages }}"
+    state: present
+  when: (use_proxy is not defined) or (not use_proxy)
 
 - name: set fact posgresql bin setup file
   set_fact:

@@ -12,6 +12,16 @@
     state: present
   notify: Apt Update
   environment: "{{ proxy_env }}"
+  when:
+    - use_proxy is defined
+    - use_proxy
+
+- name: add posgresql repository key
+  apt_key:
+    url: "{{ key_url }}"
+    state: present
+  notify: Apt Update
+  when: (use_proxy is not defined) or (not use_proxy)
 
 - meta: flush_handlers
 
@@ -25,12 +35,30 @@
     name: "{{ postgresql_packages_prereq }}"
     state: present
   environment: "{{ proxy_env }}"
+  when:
+    - use_proxy is defined
+    - use_proxy
+
+- name: install ansible prerequisites
+  apt:
+    name: "{{ postgresql_packages_prereq }}"
+    state: present
+  when: (use_proxy is not defined) or (not use_proxy)
 
 - name: install postgresql packages
   apt:
     name: "{{ postgresql_packages }}"
     state: present
   environment: "{{ proxy_env }}"
+  when:
+    - use_proxy is defined
+    - use_proxy
+
+- name: install postgresql packages
+  apt:
+    name: "{{ postgresql_packages }}"
+    state: present
+  when: (use_proxy is not defined) or (not use_proxy)
 
 - name: Check if Postgresql {{ postgresql_version }} is already initialized
   stat:

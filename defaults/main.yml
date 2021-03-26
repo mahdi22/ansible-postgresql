@@ -8,3 +8,9 @@ pgsql_supported_version: ['9.5', '9.6', '10', '11', '12', '13']
 configure_firewalld_for_redhat: true
 check_selinux: true
 listen_addresses_host_ip: true
+use_proxy: False
+proxy_env: []
+#example:
+#proxy_env:
+#  http_proxy: http://proxy.local:8080/
+#  https_proxy: http://proxy.local:8080/

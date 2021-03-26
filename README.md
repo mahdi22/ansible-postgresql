@@ -40,18 +40,20 @@ Set postgresql databases and users to create if not set create_users: no and cre
 
 Example of creating multiple databases and users:  
 ```Yaml
-postgresql_databases_users:
-  - {database: test, user: user1, userpassword: user1pass, priv: ALL}  #add database 'user' and user 'user1' with password 'user1pass' with Privileges 'ALL'
-  - {database: test1, user:'', userpassword: '', priv: ''}                  #add only database 'test1'
-  - {database: '', user: user2, userpassword: user2pass, priv: ''}          #add only user 'user2' with password 'user2pass'
+postgresql_databases_users: []
+#postgresql_databases_users:
+#  - {database: test, user: user1, userpassword: user1pass, priv: ALL}  #add database 'user' and user 'user1' with password 'user1pass' with Privileges 'ALL'
+#  - {database: test1, user:'', userpassword: '', priv: ''}                  #add only database 'test1'
+#  - {database: '', user: user2, userpassword: user2pass, priv: ''}          #add only user 'user2' with password 'user2pass'
 ```
-- To create only database without user set database: name, user:''
-- To create only user set database: '', user: name, userpassword: password
-- To create database with user PRIVILEGES set database: name, user: name, userpassword: password, priv: privileges
+- To create only database without user set database: databasename, user:''
+- To create only user set database: '', user: username, userpassword: password
+- To create database with user PRIVILEGES set database: databasename, user: username, userpassword: password, priv: privileges
 ### Basic configuration
 
 | Variable                       | Default                       | Comments                                                     |
 | :---                           | :---                          | :---                                                         |
+| `use_proxy      `              | 'False'                       | If managed hosts are behind web proxy set use_proxy: True   |
 | `http_proxy     `              | 'http://proxy.lab.local:8080/'| Set Proxy server and port replace proxy.lab.local:8080      |
 | `https_proxy`                  | 'http://proxy.lab.local:8080/'| Set Proxy server and port replace proxy.lab.local:8080      |
 | `postgresql_version`           |                               | Postgresql version that will be installed                   |
@@ -61,9 +63,12 @@ postgresql_databases_users:
 
 #### Remarks
 
-(1) Remove the folowing parameters on all install packages tasks if machines have an internet access without proxy server .:
+(1) If managed hosts are behind web proxy set the folowing variables in defaults/main.yml file:
 ```yaml
-environment: "{{ proxy_env }}"
+use_proxy: False
+proxy_env:
+  http_proxy: http://proxy.local:8080/
+  https_proxy: http://proxy.local:8080/
 ```
 
 ## Example Playbook
